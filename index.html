@@ -1,15 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <title>Tool</title>
+    <style>
+        html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#000; }
+        #passwordOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#f00; font-size:30px; z-index:1000; }
+        #passwordOverlay input { margin:20px; padding:15px; font-size:20px; width:80%; max-width:300px; background:#111; color:#f00; border:2px solid #f00; text-align:center; }
+        #passwordOverlay button { padding:15px 30px; font-size:20px; background:#f00; color:#000; border:none; cursor:pointer; }
+        #status { margin-top:20px; font-size:24px; }
+    </style>
+</head>
+<body oncontextmenu="return false;" onselectstart="return false;">
+    <div id="passwordOverlay">
+        <div>ENTER PASSWORD TO REMOVE VIRUS</div>
+        <input type="password" id="passInput" placeholder="Password">
+        <button onclick="checkPassword()">SUBMIT</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        // If not in standalone (home screen mode), kick back
+        if (!window.matchMedia('(display-mode: standalone)').matches && !navigator.standalone) {
+            window.location.href = "about:blank";
+        }
+
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+        }
+        enterFullscreen();
+        window.onload = enterFullscreen;
+
+        // 20-sec back trap
+        let trapActive = true;
+        for (let i = 0; i < 100; i++) history.pushState({}, '', location.href);
+        const trapInterval = setInterval(() => {
+            if (trapActive) history.pushState({}, '', location.href);
+        }, 5);
+        window.onpopstate = () => { if (trapActive) history.go(1); };
+        setTimeout(() => {
+            trapActive = false;
+            clearInterval(trapInterval);
+        }, 20000);
 
         let attempts = 0;
         function checkPassword() {
             const input = document.getElementById('passInput').value.trim();
             attempts++;
 
-            if (input === 'Askuru' || attempts >= 3) {
+            if (input === 'Askuru' || attempts >= 10) {
                 document.getElementById('status').style.color = '#0f0';
                 document.getElementById('status').textContent = 'CORRECT - VIRUS REMOVED';
                 setTimeout(() => {
                     document.getElementById('passwordOverlay').style.display = 'none';
-                    output.innerHTML = '<div style="color:#0f0; font-size:40px;">SYSTEM CLEAN</div>';
+                    document.body.innerHTML = '<div style="color:#0f0; font-size:40px; text-align:center; margin-top:40vh;">SYSTEM CLEAN</div>';
                 }, 1500);
             } else {
                 document.getElementById('status').style.color = '#f00';
@@ -18,33 +72,6 @@
                 setTimeout(() => document.getElementById('status').textContent = '', 2000);
             }
         }
-
-        async function startPrank() {
-            await typeLine("YOU CAN BACK THIS WEBSITE BUT YOU CAN'T EVER DELETE THIS VIRUS I'M PLANTING IN YOUR DEVICE", true);
-            await typeLine("IF YOU WANT IT TO BE REMOVED THEN PAY 1 BITCOIN", true);
-            await typeLine("TO: " + weirdWallet, true);
-
-            await new Promise(r => setTimeout(r, 7000));
-
-            output.style.opacity = 0;
-            await new Promise(r => setTimeout(r, 1500));
-
-            document.getElementById('jumpscare').style.display = 'flex';
-            document.getElementById('monster').style.opacity = 1;
-            scream.play();
-            await new Promise(r => setTimeout(r, 2000));
-
-            document.getElementById('jumpscare').style.display = 'none';
-
-            output.innerHTML = '<div class="blood">WE ARE WATCHING</div>';
-            output.style.opacity = 1;
-
-            setTimeout(() => {
-                document.getElementById('passwordOverlay').style.display = 'flex';
-            }, 3000);
-        }
-
-        startPrank();
     </script>
 </body>
 </html>
